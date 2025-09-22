@@ -1,7 +1,3 @@
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using NewsManagementAPI.Models;
@@ -25,11 +21,13 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Slug).IsRequired().HasMaxLength(255);
             entity.Property(e => e.AuthorId).IsRequired().HasMaxLength(450);
+            entity.Property(e => e.Status).IsRequired();
             entity.Property(e => e.CreatedAt).IsRequired().HasDefaultValueSql("NOW()");
             entity.Property(e => e.UpdatedAt).IsRequired().HasDefaultValueSql("NOW()");
 
             entity.HasIndex(e => e.Slug).IsUnique();
             entity.HasIndex(e => e.AuthorId);
+            entity.HasIndex(e => e.Status);
             entity.HasIndex(e => e.CreatedAt);
             entity.HasIndex(e => e.PublishedAt);
             entity.HasIndex(e => e.IsFeatured);
@@ -40,7 +38,6 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
                   .OnDelete(DeleteBehavior.Restrict);
         });
 
-        // Configure PostTranslation entity
         builder.Entity<PostTranslation>(entity =>
         {
             entity.HasKey(e => e.Id);
@@ -59,7 +56,6 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             entity.HasIndex(e => e.LanguageCode);
             entity.HasIndex(e => e.Title);
 
-            // Relationships
             entity.HasOne(e => e.Post)
                   .WithMany(p => p.Translations)
                   .HasForeignKey(e => e.PostId)
