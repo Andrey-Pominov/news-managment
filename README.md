@@ -1,6 +1,6 @@
 # Bilingual News Management
 
-A comprehensive bilingual news management platform supporting English and Arabic content with role-based access control and media management.
+A comprehensive bilingual news management platform supporting English and Russian content with role-based access control and media management.
 
 ## 🚀 Quick Start
 
@@ -12,14 +12,7 @@ A comprehensive bilingual news management platform supporting English and Arabic
 
 ### Development Setup
 
-1. **Clone and setup the project:**
-```bash
-git clone <repository-url>
-cd news-management-system
-
-```
-
-2. **Access the application:**
+ **Access the application:**
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:5000
 - API Documentation: http://localhost:5000/swagger
@@ -131,11 +124,11 @@ The API documentation is available at `/swagger` when running the backend. Key e
 
 ## 🌐 Internationalization
 
-The system supports English and Arabic:
+The system supports English and Russian:
 
 - **Backend**: Content stored in both languages
 - **Frontend**: UI translated using react-i18next
-- **Database**: Separate fields for English/Arabic content
+- **Database**: Separate fields for English/Russian content
 
 ## 🔧 Configuration
 
