@@ -64,10 +64,6 @@ class ApiService {
     return this.request<Post>(`/posts/${id}`);
   }
 
-  async getPostBySlug(slug: string): Promise<ApiResponse<Post>> {
-    return this.request<Post>(`/posts/slug/${slug}`);
-  }
-
   async createPost(data: CreatePostRequest): Promise<ApiResponse<Post>> {
     return this.request<Post>('/posts', {
       method: 'POST',
@@ -90,12 +86,6 @@ class ApiService {
 
   async publishPost(id: number): Promise<ApiResponse<Post>> {
     return this.request<Post>(`/posts/${id}/publish`, {
-      method: 'POST',
-    });
-  }
-
-  async unpublishPost(id: number): Promise<ApiResponse<Post>> {
-    return this.request<Post>(`/posts/${id}/unpublish`, {
       method: 'POST',
     });
   }

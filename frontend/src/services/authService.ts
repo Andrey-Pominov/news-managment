@@ -51,7 +51,6 @@ class AuthService {
       'Content-Type': 'application/json',
     };
 
-    // Add auth header if token exists
     const token = this.getStoredToken();
     if (token) {
       (defaultHeaders as any).Authorization = `Bearer ${token}`;
