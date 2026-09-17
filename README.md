@@ -1,164 +1,93 @@
 # Bilingual News Management
 
-A comprehensive bilingual news management platform supporting English and Russian content with role-based access control and media management.
+A small news platform where every post exists in two languages — English and Russian — with authenticated publishing. A .NET 8 API on PostgreSQL and a React front end that switches language at runtime.
 
-## 🚀 Quick Start
+## What it does
 
-### Prerequisites
-- .NET 8.0 SDK
-- Node.js 18+ and npm
-- SQL Server LocalDB or Docker
-- Git
+- **Posts with per-language translations.** A post is one record (slug, status, author, featured image, view count) with a translation row per language — title, content, summary and SEO meta. The public site shows the translation for the reader's language; the admin edits both side by side.
+- **Draft → published workflow** with a `PostStatus` on each post and a separate `PublishedAt`.
+- **Accounts:** ASP.NET Identity with JWT access tokens and refresh tokens (rotate, revoke, logout). Roles `Admin`, `Editor`, `User` are seeded; write endpoints currently require any signed-in user.
+- **Search** across translations, listing by author, lookup by slug.
+- **Bilingual UI** via `react-i18next`, toggled from the layout.
 
-### Development Setup
+## Stack
 
- **Access the application:**
-- Frontend: http://localhost:3000
-- Backend API: http://localhost:5000
-- API Documentation: http://localhost:5000/swagger
+| Layer | |
+|---|---|
+| API | ASP.NET Core 8, EF Core, ASP.NET Identity, JWT bearer, FluentValidation, AutoMapper, Serilog, Swagger |
+| Database | PostgreSQL 15 (Npgsql) |
+| Front end | React 18 + TypeScript, Vite, Tailwind CSS, Radix UI, react-router, react-i18next |
+| Runtime | Docker Compose (postgres + api + vite dev server) |
 
-## 🏗️ Architecture
+## Run it
 
-### Backend (.NET 8)
-- **API**: RESTful web API with Swagger documentation
-- **Database**: SQL Server with Entity Framework Core
-- **Authentication**: JWT-based authentication
-- **File Storage**: Local file system with upload management
-
-### Frontend (React 18)
-- **Framework**: React with TypeScript
-- **Styling**: Tailwind CSS
-- **State Management**: React Query + Context API
-- **Internationalization**: react-i18next for bilingual support
-
-### Database
-- **Primary**: SQL Server LocalDB (development)
-- **Production**: SQL Server
-- **Migrations**: Entity Framework Core migrations
-
-## 📁 Project Structure
-
-```
-news-management-system/
-├── backend/                 # .NET 8 Web API
-│   ├── Controllers/        # API controllers
-│   ├── Models/            # Data models
-│   ├── Services/          # Business logic
-│   ├── Data/              # EF Core context
-│   └── Migrations/        # Database migrations
-├── frontend/              # React application
-│   ├── src/
-│   │   ├── components/    # React components
-│   │   ├── pages/         # Page components
-│   │   ├── services/      # API services
-│   │   └── utils/         # Utilities
-│   └── public/           # Static assets
-├── scripts/              # Development scripts
-├── docs/                # Documentation
-└── docker-compose.yml   # Docker development environment
-```
-
-## 🛠️ Development
-
-### Environment Variables
-
-Create `.env` files in both backend and frontend directories:
-
-**Backend (.env):**
-```
-ConnectionStrings__DefaultConnection=Server=(localdb)\\mssqllocaldb;Database=NewsManagementDB;Trusted_Connection=true;
-JWT_SECRET_KEY=your-super-secret-key-here
-JWT_ISSUER=NewsManagementSystem
-JWT_AUDIENCE=NewsManagementSystem
-UPLOAD_PATH=./uploads
-```
-
-**Frontend (.env):**
-```
-REACT_APP_API_URL=http://localhost:5000/api
-REACT_APP_UPLOAD_URL=http://localhost:5000/uploads
-```
-
-### Database Setup
+### With Docker
 
 ```bash
-# Create and seed database
+docker compose up --build
+```
+
+- Front end: http://localhost:3000
+- API: http://localhost:5000 — Swagger at http://localhost:5000/swagger
+
+On first start the API creates the schema, seeds the three roles and an admin account:
+
+```
+admin@newsmanagement.com / Admin123!
+```
+
+### Without Docker
+
+You need .NET 8 SDK, Node 18+ and a local PostgreSQL.
+
+```bash
+# API — reads backend/appsettings.Development.json
 cd backend
-dotnet ef database update
-dotnet run --seed-data
-```
+dotnet run
 
-### Running Tests
-
-```bash
-# Backend tests
-cd backend
-dotnet test
-
-# Frontend tests
+# front end — Vite proxies /api to http://localhost:5000
 cd frontend
-npm test
-```
-
-## 🐳 Docker Development
-
-Use Docker Compose for a complete development environment:
-
-```bash
-docker-compose up -d
-```
-
-This starts:
-- SQL Server container
-- Backend API container
-- Frontend development server
-- File upload volume
-
-## 📚 API Documentation
-
-The API documentation is available at `/swagger` when running the backend. Key endpoints:
-
-- **Authentication**: `/api/auth/*`
-- **Users**: `/api/users/*`
-- **Files**: `/api/files/*`
-
-## 🌐 Internationalization
-
-The system supports English and Russian:
-
-- **Backend**: Content stored in both languages
-- **Frontend**: UI translated using react-i18next
-- **Database**: Separate fields for English/Russian content
-
-## 🔧 Configuration
-
-### Development
-- Hot reload enabled for both frontend and backend
-- SQL Server LocalDB for database
-- Local file storage for uploads
-
-### Production
-- Environment-specific configuration
-- SQL Server database
-- Cloud storage integration ready
-
-
-### Database Connection Issues
-```bash
-# Reset LocalDB
-sqllocaldb stop mssqllocaldb
-sqllocaldb delete mssqllocaldb
-sqllocaldb create mssqllocaldb
-```
-
-### Port Conflicts
-- Backend: Change port in `Properties/launchSettings.json`
-- Frontend: Change port with `PORT=3001 npm start`
-
-### Node Modules Issues
-```bash
-cd frontend
-rm -rf node_modules package-lock.json
 npm install
+npm run dev
 ```
 
+## Configuration
+
+`backend/appsettings.json` carries the shape only; values live in `appsettings.Development.json` for local runs and in environment variables everywhere else (`ConnectionStrings__DefaultConnection`, `JwtSettings__SecretKey`). Supported languages are set in `SupportedLanguages`.
+
+## Layout
+
+```
+backend/
+  Controllers/   AuthController, PostsController
+  Models/        Post, PostTranslation, PostStatus, ApplicationUser, RefreshToken
+  DTOs/          request / response shapes
+  Services/      auth (tokens), posts (CRUD, search, translations)
+  Data/          ApplicationDbContext
+  Migrations/
+frontend/
+  src/pages/     HomePage (public), AdminPage (editor)
+  src/services/  api, auth
+  src/i18n.ts    UI strings, en / ru
+docker-compose.yml
+```
+
+## API
+
+```
+POST /api/auth/register | login | refresh-token | revoke-token | change-password | logout
+GET  /api/auth/validate | profile
+
+GET    /api/posts                 list
+GET    /api/posts/{id}
+GET    /api/posts/slug/{slug}
+GET    /api/posts/search?q=
+GET    /api/posts/author/{authorId}
+POST   /api/posts                 signed-in
+PUT    /api/posts/{id}            signed-in
+DELETE /api/posts/{id}            signed-in
+```
+
+## Not there yet
+
+No automated tests; `EnsureCreated` is used instead of applying migrations on startup; the seeded roles are not yet enforced on the write endpoints. Those are the obvious next steps.

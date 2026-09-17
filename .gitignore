@@ -1,0 +1,12 @@
+# IDE
+.idea/
+.vscode/
+*.DotSettings.user
+*.user
+
+# OS
+.DS_Store
+Thumbs.db
+
+# local env
+.env
